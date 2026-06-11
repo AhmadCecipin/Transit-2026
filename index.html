@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Pengurusan PPKI SKSE 2026</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Quicksand', 'sans-serif'],
+                        friendly: ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        cheerful: {
+                            sky: '#e0f2fe',
+                            skyDeep: '#0284c7',
+                            pastelYellow: '#fef9c3',
+                            pastelPink: '#fce7f3',
+                            pastelPurple: '#f3e8ff',
+                            text: '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
+        }
+        body {
+            background-image: radial-gradient(circle at 10% 20%, rgba(216, 241, 230, 0.46) 0.1%, rgba(233, 226, 246, 0.46) 90.1%);
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-cheerful-text flex flex-col pb-12">
+
+    <!-- HEADER SECTION -->
+    <header class="w-full max-w-7xl mx-auto px-4 pt-8 md:pt-12 pb-4">
+        <div class="flex flex-col md:flex-row justify-between items-center bg-white/70 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-white/40 gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-cheerful-skyDeep text-white rounded-2xl flex items-center justify-center text-3xl shadow-md rotate-3 hover:rotate-0 transition-transform duration-300">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold font-friendly text-cheerful-skyDeep leading-tight">PORTAL PENGURUSAN PPKI</h1>
+                    <p class="text-sm font-semibold text-gray-500 flex items-center gap-1.5 mt-0.5">
+                        <i class="fas fa-school text-xs"></i> SK SIMPANG EMPAT (SKSE) <span class="text-gray-300">|</span> 2026
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Real-time Clock & Date -->
+            <div class="flex flex-col items-end bg-white/80 px-5 py-2.5 rounded-2xl border border-gray-100 shadow-inner text-right">
+                <span id="liveTime" class="text-xl font-bold text-cheerful-skyDeep font-friendly">00:00:00</span>
+                <span id="liveDate" class="text-xs font-semibold text-gray-500 mt-0.5">Tarikh Hari Ini</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- SEARCH & FILTER SECTION -->
+    <section class="w-full max-w-7xl mx-auto px-4 py-4">
+        <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-white/50 p-4 rounded-2xl border border-white/30 backdrop-blur-sm">
+            <!-- Search input -->
+            <div class="relative w-full md:w-80">
+                <input type="text" id="searchInput" oninput="filterCards()" placeholder="Cari fungsi / butang..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-cheerful-skyDeep/40 bg-white/90 text-sm font-medium shadow-sm transition-all placeholder-gray-400">
+                <i class="fas fa-search absolute left-3.5 top-3.5 text-gray-400 text-sm"></i>
+            </div>
+
+            <!-- Category Tabs -->
+            <div class="flex flex-wrap gap-2 justify-center">
+                <button onclick="setTab('semua')" class="tab-btn active bg-cheerful-skyDeep text-white text-xs md:text-sm font-bold font-friendly px-4 py-2 rounded-xl transition-all shadow-sm">Semua</button>
+                <button onclick="setTab('pentadbiran')" class="tab-btn bg-white/80 hover:bg-gray-100 text-gray-600 text-xs md:text-sm font-bold font-friendly px-4 py-2 rounded-xl transition-all border border-gray-200">Pentadbiran</button>
+                <button onclick="setTab('kurikulum')" class="tab-btn bg-white/80 hover:bg-gray-100 text-gray-600 text-xs md:text-sm font-bold font-friendly px-4 py-2 rounded-xl transition-all border border-gray-200">Kurikulum</button>
+                <button onclick="setTab('murid')" class="tab-btn bg-white/80 hover:bg-gray-100 text-gray-600 text-xs md:text-sm font-bold font-friendly px-4 py-2 rounded-xl transition-all border border-gray-200">HEM & Kokurikulum</button>
+                <button onclick="setTab('rujukan')" class="tab-btn bg-white/80 hover:bg-gray-100 text-gray-600 text-xs md:text-sm font-bold font-friendly px-4 py-2 rounded-xl transition-all border border-gray-200">Rujukan & PPD</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- GRID MENU UTAMA -->
+    <main class="w-full max-w-7xl mx-auto px-4 py-6 flex-grow">
+        <div id="gridContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+            <!-- 1. RPI (Rancangan Pendidikan Individu) -->
+            <div data-category="pentadbiran kurikulum" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-emerald-500 relative overflow-hidden bg-white" onclick="animateAndOpen(this, 'https://rpi.moe.gov.my/')">
+                <div class="absolute inset-0 bg-gradient-to-b from-emerald-50 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-emerald-600 rounded-2xl rotate-2 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-emerald-500">
+                    <i class="fas fa-user-check text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-emerald-600 transition-colors leading-snug card-title">SISTEM e-RPI</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-100 shadow-xs">RPI Individu</span>
+                <p class="relative z-10 text-[11px] font-bold text-emerald-600 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Buka Sistem <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 2. APDM (Aplikasi Pangkalan Data Murid) -->
+            <div data-category="pentadbiran murid" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-sky-500 relative overflow-hidden bg-white" onclick="animateAndOpen(this, 'https://apdm.moe.gov.my/')">
+                <div class="absolute inset-0 bg-gradient-to-b from-sky-50 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-sky-600 rounded-2xl -rotate-2 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-sky-500">
+                    <i class="fas fa-users-viewfinder text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-sky-600 transition-colors leading-snug card-title">APDM KPM</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-100 shadow-xs">Kehadiran & Data</span>
+                <p class="relative z-10 text-[11px] font-bold text-sky-600 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Buka Sistem <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 3. e-OPERASI -->
+            <div data-category="pentadbiran" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-amber-500 relative overflow-hidden bg-white" onclick="animateAndOpen(this, 'https://eoperasi.moe.gov.my/')">
+                <div class="absolute inset-0 bg-gradient-to-b from-amber-50 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-amber-600 rounded-2xl rotate-1 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-amber-500">
+                    <i class="fas fa-id-card-clip text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-amber-600 transition-colors leading-snug card-title">e-OPERASI</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-100 shadow-xs">Data Guru & Staf</span>
+                <p class="relative z-10 text-[11px] font-bold text-amber-600 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Buka Sistem <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 4. SSDM (Sistem Sahsiah Diri Murid) -->
+            <div data-category="murid" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-rose-500 relative overflow-hidden bg-white" onclick="animateAndOpen(this, 'https://ssdm.moe.gov.my/')">
+                <div class="absolute inset-0 bg-gradient-to-b from-rose-50 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-rose-600 rounded-2xl -rotate-1 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-rose-500">
+                    <i class="fas fa-shield-halved text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-rose-600 transition-colors leading-snug card-title">SSDM</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-100 shadow-xs">Sahsiah & Disiplin</span>
+                <p class="relative z-10 text-[11px] font-bold text-rose-600 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Buka Sistem <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 5. DELIMa (Sistem Pembelajaran Digital) -->
+            <div data-category="kurikulum rujukan" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-purple-500 relative overflow-hidden bg-white" onclick="animateAndOpen(this, 'https://sites.google.com/moe-dl.edu.my/login/home')">
+                <div class="absolute inset-0 bg-gradient-to-b from-purple-50 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-purple-600 rounded-2xl rotate-2 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-purple-500">
+                    <i class="fas fa-laptop-code text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-purple-600 transition-colors leading-snug card-title">PORTAL DELIMa</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-100 shadow-xs">Google Workspace</span>
+                <p class="relative z-10 text-[11px] font-bold text-purple-600 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Buka Portal <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 6. SPBT (Suku Buku Teks Digital) -->
+            <div data-category="kurikulum rujukan" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-cyan-600 relative overflow-hidden bg-white" onclick="animateAndOpen(this, 'https://www.textbookplus.my/')">
+                <div class="absolute inset-0 bg-gradient-to-b from-cyan-50 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-cyan-600 rounded-2xl -rotate-2 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-cyan-600">
+                    <i class="fas fa-book-open-reader text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-cyan-600 transition-colors leading-snug card-title">BUKU TEKS DIGITAL</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-100 shadow-xs">Rujukan Buku Teks</span>
+                <p class="relative z-10 text-[11px] font-bold text-cyan-600 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Buka Portal <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 7. SPLKPM (Latihan Kementerian Pendidikan) -->
+            <div data-category="pentadbiran" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-orange-500 relative overflow-hidden bg-white" onclick="animateAndOpen(this, 'https://splkpm.moe.gov.my/')">
+                <div class="absolute inset-0 bg-gradient-to-b from-orange-50 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-orange-600 rounded-2xl rotate-1 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-orange-500">
+                    <i class="fas fa-award text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-orange-500 transition-colors leading-snug card-title">SPLKPM KPM</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-100 shadow-xs">Siri & Latihan Staf</span>
+                <p class="relative z-10 text-[11px] font-bold text-orange-600 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Buka Portal <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 8. SISTEM KEBAJIKAN & RMT -->
+            <div data-category="murid" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-rose-400 relative overflow-hidden bg-white" onclick="animateAndOpen(this, '#')">
+                <div class="absolute inset-0 bg-gradient-to-b from-rose-50 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-rose-500 rounded-2xl -rotate-1 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-rose-400">
+                    <i class="fas fa-hand-holding-heart text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-rose-500 transition-colors leading-snug card-title">SISTEM KEBAJIKAN</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-100 shadow-xs">Bantuan & EMK</span>
+                <p class="relative z-10 text-[11px] font-bold text-rose-500 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Maklumat Terperinci <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 9. KEJAYAAN MURID PPKI SKSE -->
+            <div data-category="murid" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-indigo-600 relative overflow-hidden bg-white" onclick="animateAndOpen(this, 'https://www.canva.com/design/DAG9Dyerue0/ESW4MpXxU6y1Npa0WAUjcw/edit?utm_content=DAG9Dyerue0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton')">
+                <div class="absolute inset-0 bg-gradient-to-b from-indigo-100 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-indigo-600 rounded-2xl rotate-1 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-indigo-600">
+                    <i class="fas fa-trophy text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-indigo-600 transition-colors leading-snug card-title">KEJAYAAN MURID PPKI</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-200 shadow-xs">Pencapaian & Album</span>
+                <p class="relative z-10 text-[11px] font-bold text-indigo-600 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Buka Rekod <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 10. PEREKODAN DAN PELAPORAN PPKI 2026 -->
+            <div data-category="pentadbiran kurikulum" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-teal-500 relative overflow-hidden bg-white" onclick="animateAndOpen(this, 'https://drive.google.com/drive/folders/1MYZ6uSNaYWRIbSTm-L16R18N5bsuI4XW?usp=sharing')">
+                <div class="absolute inset-0 bg-gradient-to-b from-teal-50 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-teal-600 rounded-2xl rotate-2 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-teal-500">
+                    <i class="fas fa-chart-pie text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-teal-600 transition-colors leading-snug card-title">PEREKODAN & LAPOR</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-200 shadow-xs">Sesi Pelaporan 2026</span>
+                <p class="relative z-10 text-[11px] font-bold text-teal-600 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Buka Fail <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 11. DASHBOARD PPD -->
+            <div data-category="rujukan" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex flex-col items-center justify-center text-center cursor-pointer border-t-[8px] border-violet-600 relative overflow-hidden bg-white" onclick="animateAndOpen(this, 'https://sites.google.com/moe-dl.edu.my/pkalorgajah/data')">
+                <div class="absolute inset-0 bg-gradient-to-b from-violet-100 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 bg-white text-violet-600 rounded-2xl -rotate-2 group-hover:rotate-0 transition-transform duration-300 shadow-md flex items-center justify-center mb-3 border-[2.5px] border-violet-600">
+                    <i class="fas fa-chart-line text-2xl md:text-3xl"></i>
+                </div>
+                <h3 class="relative z-10 font-bold text-base md:text-lg text-cheerful-text group-hover:text-violet-600 transition-colors leading-snug card-title">DASHBOARD PPD</h3>
+                <span class="relative z-10 text-xs text-gray-500 font-bold font-friendly mt-1.5 bg-white/90 px-3 py-0.5 rounded-full border border-gray-200 shadow-xs">Portal Utama PPD</span>
+                <p class="relative z-10 text-[11px] font-bold text-violet-600 font-friendly mt-auto pt-4 group-hover:underline flex items-center uppercase tracking-wide bg-white/50 px-2 py-0.5 rounded-md">
+                    Klik untuk buka <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </p>
+            </div>
+
+            <!-- 12. BUKU PENGURUSAN PPKI (Featured) -->
+            <div data-category="pentadbiran rujukan" class="nav-card glass-card group rounded-3xl p-5 md:p-6 flex sm:col-span-2 md:col-span-1 lg:col-span-2 items-center justify-between text-left cursor-pointer border-t-[8px] border-sky-600 relative overflow-hidden bg-gradient-to-br from-white to-sky-50 transition-all duration-300 min-h-[140px]" onclick="animateAndOpen(this, 'https://drive.google.com/drive/folders/1FWb7o9ywO3rqOlXmc7A6j0uWoXCK7xL1?usp=sharing')">
+                <div class="absolute inset-0 bg-gradient-to-r from-sky-100/50 to-transparent opacity-40 group-hover:opacity-70 transition-opacity duration-300"></div>
+                <div class="relative z-10 flex flex-col justify-between h-full py-1">
+                    <div>
+                        <span class="bg-sky-500 text-white text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full">Buku Pengurusan</span>
+                        <h3 class="font-extrabold text-lg md:text-xl text-cheerful-text group-hover:text-sky-600 transition-colors mt-2.5 leading-snug card-title">PORTAL BUKU PENGURUSAN</h3>
+                        <p class="text-xs text-gray-500 font-semibold mt-1">Manual Operasi & Perancangan Tahunan PPKI</p>
+                    </div>
+                    <p class="text-xs font-bold text-sky-600 font-friendly group-hover:underline flex items-center uppercase tracking-wide mt-4">
+                        Buka Folder Panduan <i class="fas fa-arrow-right ml-1 text-xs group-hover:translate-x-1 transition-transform"></i>
+                    </p>
+                </div>
+                <div class="relative z-10 w-16 h-16 md:w-20 md:h-20 bg-white text-sky-600 rounded-2xl rotate-3 group-hover:rotate-0 transition-all duration-300 shadow-md flex items-center justify-center border-[2.5px] border-sky-500 ml-4 shrink-0">
+                    <i class="fas fa-book-bookmark text-3xl md:text-4xl"></i>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="hidden text-center py-12">
+            <div class="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-3">
+                <i class="fas fa-search-minus"></i>
+            </div>
+            <h3 class="font-bold text-lg text-gray-600">Tiada rekod ditemui</h3>
+            <p class="text-sm text-gray-400 mt-1">Sila cuba kata kunci atau pilihan tapisan yang lain.</p>
+        </div>
+    </main>
+
+    <!-- CUSTOM MODAL DIALOGUE (REPLACING BROWSER ALERT) -->
+    <div id="infoModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs hidden transition-all opacity-0 duration-300">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-gray-100 transform scale-95 transition-transform duration-300">
+            <div class="flex items-center gap-4 border-b border-gray-100 pb-4">
+                <div id="modalIconBg" class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                    <i id="modalIcon" class="fas fa-info"></i>
+                </div>
+                <div>
+                    <h4 id="modalTitle" class="font-extrabold text-lg md:text-xl text-cheerful-text">Maklumat Tambahan</h4>
+                    <p id="modalCategory" class="text-xs font-bold text-gray-400 uppercase tracking-wider">Kategori</p>
+                </div>
+            </div>
+            <div class="py-5">
+                <p id="modalDescription" class="text-sm text-gray-600 font-medium leading-relaxed">
+                    Sila hubungi pentadbir sekolah jika ada masalah berkaitan data ini.
+                </p>
+                <!-- Detail Info Box -->
+                <div class="mt-4 bg-gray-50/80 rounded-2xl p-4 border border-gray-100 text-xs text-gray-500 space-y-1.5 font-semibold">
+                    <div class="flex justify-between">
+                        <span>Penyelia:</span>
+                        <span class="text-gray-700">Penyelaras PPKI</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Sesi Semakan:</span>
+                        <span class="text-gray-700">Tahun 2026</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-3 justify-end pt-2 border-t border-gray-100">
+                <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors">Tutup</button>
+                <button id="modalActionBtn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-cheerful-skyDeep hover:bg-sky-700 text-white transition-colors flex items-center gap-1.5">
+                    Lawati Pautan <i class="fas fa-external-link-alt text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="w-full max-w-7xl mx-auto px-4 mt-auto">
+        <div class="border-t border-gray-200/50 pt-6 text-center text-xs text-gray-400 font-bold flex flex-col sm:flex-row justify-between items-center gap-3">
+            <p>&copy; 2026 Program Pendidikan Khas Integrasi (PPKI) SK Simpang Empat.</p>
+            <p class="flex items-center gap-1"><i class="fas fa-heart text-rose-500"></i> Untuk kegunaan pengurusan PPKI</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT FUNCTIONS -->
+    <script>
+        // Update Live clock and date
+        function updateClock() {
+            const now = new Date();
+            
+            // Format Time
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            document.getElementById('liveTime').textContent = now.toLocaleTimeString('ms-MY', timeOptions);
+            
+            // Format Date
+            const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('liveDate').textContent = now.toLocaleDateString('ms-MY', dateOptions);
+        }
+        
+        // Initial call and interval setup
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // Core open & click state function
+        function animateAndOpen(element, url) {
+            // Apply visual bounce/ripple effect
+            element.classList.add('scale-95', 'opacity-90');
+            setTimeout(() => {
+                element.classList.remove('scale-95', 'opacity-90');
+                
+                // If it has active direct URL
+                if (url && url !== '#') {
+                    window.open(url, '_blank');
+                } else {
+                    // Open Custom Detailed Modal instead of default browser alert
+                    openModal(element);
+                }
+            }, 180);
+        }
+
+        // Custom Modal Logic
+        const modal = document.getElementById('infoModal');
+        const modalContent = modal.querySelector('div');
+
+        function openModal(btnElement) {
+            const title = btnElement.querySelector('.card-title')?.textContent || "MAKLUMAT LANJUT";
+            const badge = btnElement.querySelector('span')?.textContent || "Panduan Sistem";
+            const borderClasses = Array.from(btnElement.classList).find(c => c.startsWith('border-t-'));
+            let colorHex = "text-sky-600";
+            let bgHex = "bg-sky-50";
+
+            if (borderClasses) {
+                if (borderClasses.includes('rose-500') || borderClasses.includes('rose-400')) {
+                    colorHex = "text-rose-600";
+                    bgHex = "bg-rose-50";
+                } else if (borderClasses.includes('emerald')) {
+                    colorHex = "text-emerald-600";
+                    bgHex = "bg-emerald-50";
+                } else if (borderClasses.includes('amber')) {
+                    colorHex = "text-amber-600";
+                    bgHex = "bg-amber-50";
+                } else if (borderClasses.includes('indigo')) {
+                    colorHex = "text-indigo-600";
+                    bgHex = "bg-indigo-50";
+                } else if (borderClasses.includes('violet')) {
+                    colorHex = "text-violet-600";
+                    bgHex = "bg-violet-50";
+                }
+            }
+
+            // Set content to modal dynamically
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalCategory').textContent = badge;
+            
+            // Set dynamic icon colors
+            const iconBg = document.getElementById('modalIconBg');
+            iconBg.className = `w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-inner ${bgHex} ${colorHex}`;
+            
+            // Re-assign main icon inside modal based on trigger
+            const sourceIcon = btnElement.querySelector('i');
+            const targetIcon = document.getElementById('modalIcon');
+            if (sourceIcon) {
+                targetIcon.className = sourceIcon.className;
+            }
+
+            // Custom specific instructions for system
+            let customDesc = "Data ini mengandungi perincian kebajikan, bantuan kewangan, serta bantuan Elaun Murid Khas (EMK). Semua rekod diselaraskan untuk kegunaan PPKI SK Simpang Empat 2026.";
+            if (title.includes("KEBAJIKAN")) {
+                customDesc = "Portal Bantuan, Pengurusan Rantau Makanan Tambahan (RMT), serta semakan kemasukan bantuan Elaun Murid Khas (EMK) PPKI SKSE.";
+                document.getElementById('modalActionBtn').onclick = function() {
+                    window.open('https://apdm.moe.gov.my/', '_blank');
+                };
+            } else {
+                document.getElementById('modalActionBtn').onclick = function() {
+                    closeModal();
+                };
+            }
+            document.getElementById('modalDescription').textContent = customDesc;
+
+            // Display modal with animation
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 20);
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Close on escape key
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Interactive Filtering (Carian & Kategori)
+        let activeTab = 'semua';
+
+        function setTab(category) {
+            activeTab = category;
+            
+            // Update active state of buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn bg-white/80 hover:bg-gray-100 text-gray-600 text-xs md:text-sm font-bold font-friendly px-4 py-2 rounded-xl transition-all border border-gray-200";
+            });
+
+            // Find current clicked and set high contrast color
+            const clickedBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.textContent.toLowerCase().includes(category) || (category === 'semua' && b.textContent === 'Semua'));
+            if (clickedBtn) {
+                clickedBtn.className = "tab-btn active bg-cheerful-skyDeep text-white text-xs md:text-sm font-bold font-friendly px-4 py-2 rounded-xl transition-all shadow-sm";
+            }
+
+            filterCards();
+        }
+
+        function filterCards() {
+            const searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.nav-card');
+            let hasVisibleCard = false;
+
+            cards.forEach(card => {
+                const title = card.querySelector('.card-title')?.textContent.toLowerCase() || "";
+                const categories = card.getAttribute('data-category') || "";
+                
+                const matchesSearch = title.includes(searchValue);
+                const matchesCategory = (activeTab === 'semua') || categories.includes(activeTab);
+
+                if (matchesSearch && matchesCategory) {
+                    card.classList.remove('hidden');
+                    hasVisibleCard = true;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            // Show 'No Results' notice if everything is filtered out
+            const noResults = document.getElementById('noResults');
+            if (hasVisibleCard) {
+                noResults.classList.add('hidden');
+            } else {
+                noResults.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
